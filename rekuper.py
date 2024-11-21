@@ -4,10 +4,13 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_restx import Api, Resource, fields
+from prometheus_flask_exporter import PrometheusMetrics
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 app = Flask("__name__")
+metrics = PrometheusMetrics(app)
+
 if settings.database.get("connection_string") is None:
     db_creds = f"{settings.database.username}:{settings.database.password}"
     db_host = settings.database.host
@@ -360,6 +363,16 @@ class ContainerList(Resource):
     def get(self):
         containers = Container.query.all()
         return [container.to_dict() for container in containers], 200
+
+
+# register routes to the prometheus metrics
+metrics.register_default(
+    metrics.counter(
+        "by_path_counter",
+        "Request count by request paths",
+        labels={"path": lambda: request.path},
+    )
+)
 
 
 if __name__ == "__main__":

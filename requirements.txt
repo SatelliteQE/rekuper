@@ -3,5 +3,6 @@ Flask
 Flask-SQLAlchemy
 Flask-Migrate
 flask-restx
+prometheus-flask-exporter
 psycopg2-binary
 requests
